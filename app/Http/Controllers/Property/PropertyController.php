@@ -15,7 +15,7 @@ class PropertyController extends Controller
     public function index()
     {
         $properties = Property::select()->take(9)->orderBy('created_at', 'desc')->get();
-        return response()->json(['properties' => $properties]);
+        return response()->json($properties);
 
     }
 
@@ -98,5 +98,13 @@ class PropertyController extends Controller
         $property = Property::find($id);
         $property->delete();
         return response()->json(['message' => 'Property deleted successfully']);
+    }
+
+    public function changestatus(Request $request, string $id)
+    {
+        $property = Property::find($id);
+        $property->status = $request->status;
+        $property->save();
+        return response()->json(['message' => 'Property status updated successfully', 'property' => $property]);
     }
 }

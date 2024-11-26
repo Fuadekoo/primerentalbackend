@@ -56,4 +56,16 @@ class User extends Authenticatable
     {
         return $this->role === self::ROLE_CUSTOMER;
     }
+
+    // One User -> Many Bookings
+    public function bookings()
+    {
+        return $this->hasMany(Book::class);
+    }
+
+    // One User -> Many Feedback
+    public function feedbacks()
+    {
+        return $this->hasMany(Feedback::class);
+    }
 }

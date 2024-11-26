@@ -17,8 +17,10 @@ return new class extends Migration
             $table->text('description');
             $table->string('location');
             $table->integer('price');
-            $table->string('type');
+            $table->unsignedBigInteger('type_id');
             $table->string('image');
+            $table->string("youtube_link")->nullable();
+            $table->string("tiktok_link")->nullable();
             $table->tinyInteger('status')->default(1);
             $table->timestamps();
         });

@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Property\PropertyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +27,11 @@ Route::get('/about', function () {
     return response()->json(['message' => 'About Page']);
 });
 
+Route::prefix('properties')->group(function () {
+    Route::get('/', [PropertyController::class, 'index']); // Fetch all properties
+    Route::get('/{id}', [PropertyController::class, 'show']); // Fetch single property
+});
+
 /**
  * AUTHENTICATED ROUTES (ACCESSIBLE TO BOTH ADMIN AND CUSTOMER)
  */
@@ -45,6 +51,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
  * ADMIN-ONLY ROUTES
  */
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+
+    // ADMIN PROPERTY ROUTES
+    Route::prefix('properties')->group(function () {
+        Route::post('/', [PropertyController::class, 'store']); // Add property
+        Route::put('/{id}', [PropertyController::class, 'update']); // Update property
+        Route::delete('/{id}', [PropertyController::class, 'destroy']); // Delete property
+        Route::post('/{id}/status', [PropertyController::class, 'changestatus']); // Change status
+    });
+
     Route::get('/admin/dashboard', function () {
         return response()->json(['message' => 'Admin Dashboard']);
     });
