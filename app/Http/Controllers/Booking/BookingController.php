@@ -93,14 +93,8 @@ class BookingController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id, $propertyId)
+    public function update(Request $request, string $id)
     {
-        // CHECK THE EXISTANCE  of property
-        $property = Property::find($propertyId);
-
-        if (!$property) {
-            return response()->json(['message' => 'Property not found'], 404);
-        }
         // Validate the incoming request
         $request->validate([
             'phone_number' => 'required|string|max:255',
