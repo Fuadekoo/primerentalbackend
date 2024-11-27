@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Booking;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Book;
+use App\Models\Property;
+use Illuminate\Support\Facades\Auth;
+
 
 class BookingController extends Controller
 {
@@ -12,7 +16,32 @@ class BookingController extends Controller
      */
     public function index()
     {
-        //
+        // fetch all bookings
+        $bookings = Book::all();
+        return response()->json(['bookings' => $bookings]);
+    }
+
+    // fetch all my bookings
+    public function mybookings()
+    {
+        $bookings = Book::where('user_id', Auth::id())->get();
+        return response()->json(['bookings' => $bookings]);
+    }
+
+    // update the status of the booking
+    public function updateStatus(Request $request, $bookingId)
+    {
+        // Validate the incoming request
+        $request->validate([
+            'status' => 'required|string|in:pending,approved,rejected',
+        ]);
+
+        // Update the booking status
+        $booking = Book::find($bookingId);
+        $booking->status = $request->status;
+        $booking->save();
+
+        return response()->json(['message' => 'Booking status updated successfully', 'booking' => $booking]);
     }
 
     /**
@@ -26,9 +55,23 @@ class BookingController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request,$propertyId)
     {
-        //
+       // Validate the incoming request
+        $request->validate([
+            'phone_number' => 'required|string|max:255',
+            'description' => 'required|string',
+        ]);
+
+        // Create the booking
+        $booking = Book::create([
+            'user_id' => Auth::id(),
+            'property_id' => $propertyId,
+            'phone_number' => $request->phone_number,
+            'description' => $request->description,
+        ]);
+
+        return response()->json(['message' => 'Booking created successfully', 'booking' => $booking]);
     }
 
     /**
@@ -50,9 +93,27 @@ class BookingController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id, $propertyId)
     {
-        //
+        // CHECK THE EXISTANCE  of property
+        $property = Property::find($propertyId);
+
+        if (!$property) {
+            return response()->json(['message' => 'Property not found'], 404);
+        }
+        // Validate the incoming request
+        $request->validate([
+            'phone_number' => 'required|string|max:255',
+            'description' => 'required|string',
+        ]);
+
+        // Update the booking
+        $booking = Book::find($id);
+        $booking->phone_number = $request->phone_number;
+        $booking->description = $request->description;
+        $booking->save();
+
+        return response()->json(['message' => 'Booking updated successfully', 'booking' => $booking]);
     }
 
     /**
@@ -60,6 +121,10 @@ class BookingController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        // Delete the booking
+        $booking = Book::find($id);
+        $booking->delete();
+
+        return response()->json(['message' => 'Booking deleted successfully']);
     }
 }

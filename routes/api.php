@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Property\PropertyController;
 use App\Http\Controllers\Property\HomeTypeController;
 use App\Http\Controllers\Feedback\FeedbackController;
+use App\Http\Controllers\Booking\BookingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -71,6 +72,12 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::delete('/{id}', [HomeTypeController::class, 'destroy']); // Delete home type
     });
 
+    // ADMIN BOOKING ROUTES
+    Route::prefix('bookings')->group(function () {
+        Route::get('/', [BookingController::class, 'index']); // Fetch all bookings
+        Route::put('/{booking}/status', [BookingController::class, 'updateStatus']); // Update booking status
+    });
+
     Route::get('/admin/dashboard', function () {
         return response()->json(['message' => 'Admin Dashboard']);
     });
@@ -94,6 +101,14 @@ Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
         Route::get('/myfeedback/{propertyId}', [FeedbackController::class, 'myfedback']); // Fetch my feedback
 
 
+    });
+
+    // CUSTOMER BOOKING ROUTES
+    Route::prefix('bookings')->group(function () {
+        Route::post('/properties/{property}', [BookingController::class, 'store']); // Add booking
+        Route::get('/mybookings', [BookingController::class, 'mybookings']); // Fetch my bookings
+        Route::put('/{booking}', [BookingController::class, 'update']); // Update booking
+        Route::delete('/{booking}', [BookingController::class, 'destroy']); // Delete booking
     });
 
     Route::get('/customer/profile', function () {
