@@ -18,6 +18,10 @@ return new class extends Migration
             $table->string('feedback');
             $table->tinyInteger('rating');
             $table->timestamps();
+
+            // add unique constraint to prevent duplicate feedback
+            $table->unique(['user_id', 'property_id']);
+
         });
     }
 

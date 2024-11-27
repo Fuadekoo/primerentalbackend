@@ -87,7 +87,13 @@ Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
 
     // customer feedback routes
     Route::prefix('feedback')->group(function () {
+        Route::put('/{id}/{propertyId}', [FeedbackController::class, 'update']); // Update feedback
+        Route::delete('/{id}/{propertyId}', [FeedbackController::class, 'destroy']); // Delete feedback
         Route::post('/{propertyId}', [FeedbackController::class, 'store']); // Add feedback
+        Route::get('/{propertyId}', [FeedbackController::class, 'index']); // Fetch feedback
+        Route::get('/myfeedback/{propertyId}', [FeedbackController::class, 'myfedback']); // Fetch my feedback
+
+
     });
 
     Route::get('/customer/profile', function () {

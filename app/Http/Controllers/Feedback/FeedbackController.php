@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Feedback;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Property;
 
 class FeedbackController extends Controller
 {
@@ -38,6 +39,12 @@ class FeedbackController extends Controller
      */
     public function store(Request $request,$propertyId)
     {
+        // frist check the existance of property
+        $property = Property::find($propertyId);
+        if (!$property) {
+            return response()->json(['message' => 'Property not found'], 404);
+
+        }
          // Validate the incoming request
          $request->validate([
             'feedback' => 'required|string|max:1000',
@@ -77,6 +84,13 @@ class FeedbackController extends Controller
      */
     public function update(Request $request, string $id, $propertyId)
     {
+        // frist check the existance of property
+        $property = Property::find($propertyId);
+        if (!$property) {
+            return response()->json(['message' => 'Property not found'], 404);
+
+        }
+
         // validate the incoming request
         $request->validate([
             'feedback' => 'required|string|max:1000',
@@ -106,6 +120,12 @@ class FeedbackController extends Controller
      */
     public function destroy(string $id,$propertyId)
     {
+        // frist check the existance of property
+        $property = Property::find($propertyId);
+        if (!$property) {
+            return response()->json(['message' => 'Property not found'], 404);
+
+        }
         // Find the feedback byID aditional fether is  property_id and my feedback by user_id
         $feedback = Feedback::where('id', $id)->where('property_id', $propertyId)->where('user_id', Auth::id())->first();
 
