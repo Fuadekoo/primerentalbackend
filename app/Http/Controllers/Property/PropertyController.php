@@ -37,7 +37,7 @@ class PropertyController extends Controller
             'description' => 'required|string',
             'location' => 'required|string',
             'price' => 'required|integer',
-            'type' => 'required|string',
+           'type_id' => 'required|integer',
             'image' => 'required|string',
         ]);
 
@@ -77,7 +77,7 @@ class PropertyController extends Controller
             'description' => 'required|string',
             'location' => 'required|string',
             'price' => 'required|integer',
-            'type' => 'required|string',
+            'type_id' => 'required|integer',
             'image' => 'required|string',
         ]);
 

@@ -32,7 +32,7 @@ class HomeTypeController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'home_type' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -69,7 +69,7 @@ class HomeTypeController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'home_type' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {

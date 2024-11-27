@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Property\PropertyController;
+use App\Http\Controllers\Property\HomeTypeController;
+use App\Http\Controllers\Feedback\FeedbackController;
 
 /*
 |--------------------------------------------------------------------------
@@ -60,6 +62,15 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::post('/{id}/status', [PropertyController::class, 'changestatus']); // Change status
     });
 
+    // admin home type routes
+    Route::prefix('hometypes')->group(function () {
+        Route::get('/', [HomeTypeController::class, 'index']); // Fetch all home types
+        Route::post('/', [HomeTypeController::class, 'store']); // Add home type
+        Route::get('/{id}', [HomeTypeController::class, 'show']); // Fetch single home type
+        Route::put('/{id}', [HomeTypeController::class, 'update']); // Update home type
+        Route::delete('/{id}', [HomeTypeController::class, 'destroy']); // Delete home type
+    });
+
     Route::get('/admin/dashboard', function () {
         return response()->json(['message' => 'Admin Dashboard']);
     });
@@ -73,6 +84,12 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
  * CUSTOMER-ONLY ROUTES
  */
 Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
+
+    // customer feedback routes
+    Route::prefix('feedback')->group(function () {
+        Route::post('/{propertyId}', [FeedbackController::class, 'store']); // Add feedback
+    });
+
     Route::get('/customer/profile', function () {
         return response()->json(['message' => 'Customer Profile Page']);
     });
