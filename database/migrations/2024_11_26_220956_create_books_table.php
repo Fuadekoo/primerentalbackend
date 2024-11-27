@@ -19,6 +19,9 @@ return new class extends Migration
             $table->string('description');
             $table->string('status')->default('pending');
             $table->timestamps();
+
+            // add unique constraint to prevent duplicate booking
+            $table->unique(['user_id', 'property_id']);
         });
     }
 
