@@ -7,6 +7,7 @@ use App\Http\Controllers\Property\PropertyController;
 use App\Http\Controllers\Property\HomeTypeController;
 use App\Http\Controllers\Feedback\FeedbackController;
 use App\Http\Controllers\Booking\BookingController;
+use App\Http\Controllers\Filter\SearchController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,8 +22,15 @@ use App\Http\Controllers\Booking\BookingController;
 /**
  * PUBLIC ROUTES (ACCESSIBLE TO ALL)
  */
+
+ Route::get('/sanctum/csrf-cookie', function () {
+    return response()->json(['message' => 'CSRF cookie set']);
+});
+
+Route::middleware('auth:sanctum')->post('/get-user-by-id', [AuthController::class, 'getUserById']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/properties/search_by_price', [SearchController::class, 'search_by_price']);
 Route::get('/homepage', function () {
     return response()->json(['message' => 'Welcome to the Homepage']);
 });
@@ -34,6 +42,9 @@ Route::prefix('properties')->group(function () {
     Route::get('/', [PropertyController::class, 'index']); // Fetch all properties
     Route::get('/{id}', [PropertyController::class, 'show']); // Fetch single property
 });
+
+// filter properties by price
+Route::get('/properties/search_by_price', [SearchController::class, 'search_by_price']);
 
 /**
  * AUTHENTICATED ROUTES (ACCESSIBLE TO BOTH ADMIN AND CUSTOMER)
@@ -78,9 +89,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::put('/{booking}/status', [BookingController::class, 'updateStatus']); // Update booking status
     });
 
-    Route::get('/admin/dashboard', function () {
-        return response()->json(['message' => 'Admin Dashboard']);
-    });
+    // admin dashboard routes
+    Route::get('/dashboard', [SearchController::class, 'dashboard']);
 
     Route::get('/admin/settings', function () {
         return response()->json(['message' => 'Admin Settings Page']);

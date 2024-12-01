@@ -42,7 +42,7 @@ class AuthController extends Controller
     // Exclude the password from the user object
     $user->makeHidden('password');
 
-    return response()->json(['message' => 'User created successfully', 'user' => $user]);
+    return response()->json(['success' => true, 'message' => 'User registered successfully']);
 }
 
 
@@ -67,8 +67,38 @@ public function login(Request $request)
 
     $token = $user->createToken('auth_token')->plainTextToken;
 
-    return response()->json(['token' => $token]);
+    return response()->json([
+        'message' => 'User logged in successfully',
+        'success' => true,
+        'data' => $token,
+    ]);
 }
+// Get user by ID
+
+public function getUserById(Request $request)
+    {
+        try {
+            $user = User::find($request->user()->id);
+            if (!$user) {
+                return response()->json([
+                    'message' => 'User not found',
+                    'success' => false,
+                    'data' => null,
+                ], 404);
+            }
+            return response()->json([
+                'message' => 'User fetched successfully',
+                'success' => true,
+                'data' => $user,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'success' => false,
+                'data' => null,
+            ], 500);
+        }
+    }
 
 // Logout user
 public function logout(Request $request)
