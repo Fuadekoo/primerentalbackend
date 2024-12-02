@@ -12,10 +12,21 @@ class HomeTypeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $home_types = HomeType::all();
-        return response()->json($home_types);
+        try {
+            $searchTerm = $request->query('searchTerm');
+            $query = HomeType::query();
+
+            if ($searchTerm) {
+                $query->where('home_type', 'LIKE', "%{$searchTerm}%");
+            }
+
+            $home_types = $query->get();
+            return response()->json($home_types, 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Server error'], 500);
+        }
     }
 
     /**
@@ -90,4 +101,24 @@ class HomeTypeController extends Controller
         $home_types->delete();
         return response()->json(['message' => 'Home type deleted successfully']);
     }
+
+    // Fetch all home types with optional search functionality
+public function getHomeTypes(Request $request)
+{
+    try {
+        $searchTerm = $request->query('searchTerm');
+        $query = HomeType::query();
+
+        if ($searchTerm) {
+            $query->where('home_type', 'LIKE', "%{$searchTerm}%");
+        }
+
+        $home_types = $query->get();
+        return response()->json($home_types, 200);
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Server error'], 500);
+    }
 }
+}
+
+

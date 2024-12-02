@@ -8,6 +8,7 @@ use App\Http\Controllers\Property\HomeTypeController;
 use App\Http\Controllers\Feedback\FeedbackController;
 use App\Http\Controllers\Booking\BookingController;
 use App\Http\Controllers\Filter\SearchController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -67,12 +68,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     // ADMIN PROPERTY ROUTES
+    Route::get('/getproperty',[PropertyController::class, 'getproperty']); // get the property and search it
     Route::prefix('properties')->group(function () {
         Route::post('/', [PropertyController::class, 'store']); // Add property
         Route::put('/{id}', [PropertyController::class, 'update']); // Update property
         Route::delete('/{id}', [PropertyController::class, 'destroy']); // Delete property
         Route::post('/{id}/status', [PropertyController::class, 'changestatus']); // Change status
+
     });
+
+    Route::get('/getUsers', [UserController::class, 'getUsers']);
+    Route::put('/toggleBlockUser/{userId}/block', [UserController::class, 'toggleBlockUser']);
 
     // admin home type routes
     Route::prefix('hometypes')->group(function () {

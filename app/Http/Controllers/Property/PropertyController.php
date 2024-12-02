@@ -107,4 +107,22 @@ class PropertyController extends Controller
         $property->save();
         return response()->json(['message' => 'Property status updated successfully', 'property' => $property]);
     }
+
+    public function getproperty(Request $request){
+        try {
+            $searchTerm = $request->query('searchTerm');
+            $query = Property::query();
+
+            if ($searchTerm) {
+                $query->where('property_name', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('location', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('description', 'LIKE', "%{$searchTerm}%");
+            }
+
+            $properties = $query->get();
+            return response()->json($properties, 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Server error'], 500);
+        }
+    }
 }

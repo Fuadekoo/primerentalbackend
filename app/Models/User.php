@@ -25,7 +25,9 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'isBlocked'
     ];
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -43,6 +45,7 @@ class User extends Authenticatable
      * @var array<string, string>
      */
     protected $casts = [
+        'isBlocked' => 'boolean',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
