@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+
 
 
 class AuthController extends Controller
@@ -106,6 +108,239 @@ public function logout(Request $request)
     $request->user()->currentAccessToken()->delete();
 
     return response()->json(['message' => 'Logged out']);
+}
+
+
+    // Update user
+    public function updateUser(Request $request)
+    {
+        try {
+            // Validate the incoming request
+            $request->validate([
+                "name" => "required|string|max:255",
+                'password' => 'nullable|confirmed|min:6',
+                'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            $imageNames = date('YmdHis').uniqid().'.'.$request->image->extension();
+        $request->image->move(public_path('profile_images'), $imageNames);
+
+            $user = Auth::user();
+            // check if the user exists
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found',
+                ], 404);
+            }
+
+            $authenticatedUser = User::find($user->id);
+            $authenticatedUser->name = $request->name;
+            $authenticatedUser->avatar = $imageNames;
+            $authenticatedUser->password = Hash::make($request->password);
+            $authenticatedUser->save();
+
+            // Update user details
+            // $user->name = $request->name;
+
+            // if ($request->has('password')) {
+            //     $user->password = Hash::make($request->password);
+            // }
+
+            // Handle avatar upload
+            // if ($request->hasFile('avatar')) {
+                // Generate a unique filename using date and uniqid
+                // $imageName = date('YmdHis') . uniqid() . '.' . $request->file('avatar')->extension();
+
+                // Move the uploaded file to the profile_images directory
+                // $request->file('avatar')->move(public_path('profile_images'), $imageName);
+
+                // Delete the old avatar if it exists
+                // if ($user->avatar && file_exists(public_path('profile_images/' . $user->avatar))) {
+                //     unlink(public_path('profile_images/' . $user->avatar));
+                // }
+
+                // Save the new avatar name in the database
+                // $user->avatar = $imageName;
+            // }
+
+            // $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile updated successfully.',
+                'data' => $user,
+                'avatar_url' => url('profile_images/' . $user->avatar),
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+
+
+        }
+
+
+        public function updateProfile(Request $request)
+        {
+            try {
+                // Validate the incoming request
+                $request->validate([
+                    'name' => 'required|string|max:255',
+                    'password' => 'nullable|confirmed|min:6',
+                    'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                ]);
+
+                $user = Auth::user();
+
+                // Update the user's name
+                $user->name = $request->name;
+
+                // Update the user's password if provided
+                if ($request->filled('password')) {
+                    $user->password = Hash::make($request->password);
+                }
+
+                // Handle avatar upload
+                if ($request->hasFile('avatar')) {
+                    // Generate a unique filename using date and uniqid
+                    $imageName = date('YmdHis') . uniqid() . '.' . $request->file('avatar')->extension();
+
+                    // Move the uploaded file to the profile_images directory
+                    $request->file('avatar')->move(public_path('profile_images'), $imageName);
+
+                    // Delete the old avatar if it exists
+                    if ($user->avatar && file_exists(public_path('profile_images/' . $user->avatar))) {
+                        unlink(public_path('profile_images/' . $user->avatar));
+                    }
+
+                    // Save the new avatar name in the database
+                    $user->avatar = $imageName;
+                }
+
+                $user->save();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Profile updated successfully.',
+                    'data' => [
+                        'name' => $user->name,
+                        'avatar_url' => url('profile_images/' . $user->avatar),
+                    ],
+                ], 200);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 500);
+            }
+        }
+
+
+        public function updateProfileInfo(Request $request)
+{
+    try {
+        // Validate the incoming request
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'password' => 'nullable|confirmed|min:6',
+        ]);
+
+        $user = Auth::user();
+
+        // Update the user's name
+        $user->name = $request->name;
+
+        // Update the user's password if provided
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile information updated successfully.',
+            'data' => [
+                'name' => $user->name,
+            ],
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+public function updateProfilePhoto(Request $request)
+{
+    try {
+        // Validate the incoming request
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user = Auth::user();
+
+        // Handle avatar upload
+        if ($request->hasFile('avatar')) {
+            // Generate a unique filename using date and uniqid
+            $imageName = date('YmdHis') . uniqid() . '.' . $request->file('avatar')->extension();
+
+            // Move the uploaded file to the profile_images directory
+            $request->file('avatar')->move(public_path('profile_images'), $imageName);
+
+            // Delete the old avatar if it exists
+            if ($user->avatar && file_exists(public_path('profile_images/' . $user->avatar))) {
+                unlink(public_path('profile_images/' . $user->avatar));
+            }
+
+            // Save the new avatar name in the database
+            $user->avatar = $imageName;
+        }
+
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile photo updated successfully.',
+            'data' => [
+                'avatar_url' => url('profile_images/' . $user->avatar),
+            ],
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+public function getProfilePhoto()
+{
+    try {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'name' => $user->name,
+                'avatar_url' => $user->avatar ? url('profile_images/' . $user->avatar) : null,
+            ],
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ], 500);
+    }
 }
 
 

@@ -46,12 +46,17 @@ Route::prefix('properties')->group(function () {
 
 // filter properties by price
 Route::get('/properties/search_by_price', [SearchController::class, 'search_by_price']);
-
+Route::get('/getproperty',[PropertyController::class, 'getproperty']); // get the property and search it
 /**
  * AUTHENTICATED ROUTES (ACCESSIBLE TO BOTH ADMIN AND CUSTOMER)
  */
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::put('/updateUser', [AuthController::class, 'updateUser']);
+    Route::put('profile', [AuthController::class, 'updateProfile']);
+    Route::post('/profile/photo', [AuthController::class, 'updateProfilePhoto']);
+    Route::put('/profile/info', [AuthController::class, 'updateProfileInfo']);
+    Route::get('/getprofilephoto', [AuthController::class, 'getProfilePhoto']);
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
@@ -68,7 +73,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     // ADMIN PROPERTY ROUTES
-    Route::get('/getproperty',[PropertyController::class, 'getproperty']); // get the property and search it
+
     Route::prefix('properties')->group(function () {
         Route::post('/', [PropertyController::class, 'store']); // Add property
         Route::put('/{id}', [PropertyController::class, 'update']); // Update property

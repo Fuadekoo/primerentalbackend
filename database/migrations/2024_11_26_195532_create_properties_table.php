@@ -15,10 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description');
+            $table->string('offer_type');
             $table->string('location');
             $table->integer('price');
             $table->unsignedBigInteger('type_id');
-            $table->string('image');
+            $table->string('images');
             $table->string("youtube_link")->nullable();
             $table->string("tiktok_link")->nullable();
             $table->tinyInteger('status')->default(1);

@@ -17,8 +17,9 @@ class BookingController extends Controller
     public function index()
     {
         // fetch all bookings
-        $bookings = Book::all();
-        return response()->json(['bookings' => $bookings]);
+        $bookings = Book::all()->orderBy('created_at', 'desc');
+        return response()->json($bookings);
+        // return response()->json(['bookings' => $bookings]);
     }
 
     // fetch all my bookings
