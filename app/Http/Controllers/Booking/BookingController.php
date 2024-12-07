@@ -16,10 +16,19 @@ class BookingController extends Controller
      */
     public function index()
     {
-        // fetch all bookings
-        $bookings = Book::all()->orderBy('created_at', 'desc');
-        return response()->json($bookings);
-        // return response()->json(['bookings' => $bookings]);
+        try {
+            $bookings = Book::orderBy('created_at', 'desc')->get(); // Fetch all bookings in descending order
+
+            return response()->json([
+                'success' => true,
+                'data' => $bookings,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     // fetch all my bookings
