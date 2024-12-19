@@ -8,6 +8,8 @@ use App\Http\Controllers\Property\HomeTypeController;
 use App\Http\Controllers\Feedback\FeedbackController;
 use App\Http\Controllers\Booking\BookingController;
 use App\Http\Controllers\Filter\SearchController;
+use App\Http\Controllers\Chat\ChatController;
+use App\Http\Controllers\Message\MessageController;
 use App\Http\Controllers\UserController;
 
 /*
@@ -47,6 +49,12 @@ Route::prefix('properties')->group(function () {
 // filter properties by price
 Route::get('/properties/search_by_price', [SearchController::class, 'search_by_price']);
 Route::get('/getproperty',[PropertyController::class, 'getproperty']); // get the property and search it
+
+// filter the hometypes
+Route::get('/hometypesearch', [HomeTypeController::class, 'index']); // Fetch all home types
+
+
+
 /**
  * AUTHENTICATED ROUTES (ACCESSIBLE TO BOTH ADMIN AND CUSTOMER)
  */
@@ -57,6 +65,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/profile/photo', [AuthController::class, 'updateProfilePhoto']);
     Route::put('/profile/info', [AuthController::class, 'updateProfileInfo']);
     Route::get('/getprofilephoto', [AuthController::class, 'getProfilePhoto']);
+    // Route::post('/sendMessage', [ChatController::class, 'sendMessage']);
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
@@ -71,6 +80,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
  * ADMIN-ONLY ROUTES
  */
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+
+    // route for messagecontroller
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/reply-message/{userId}', [MessageController::class, 'replyMessage']);  //this is a reply message by admin
+        Route::get('/users-with-messages', [MessageController::class, 'getUsersWithMessages']);
+        Route::get('/listreply', [MessageController::class, 'getUsersWithMessages']);  //this is a list of reply message
+        Route::get('/getmessage/:id', [MessageController::class, 'fetchMessages']); //this is a get message by customer
+        Route::get('/messages/with-user/{userId}', [MessageController::class, 'getMessagesWithUser']); // New route
+    });
 
     // ADMIN PROPERTY ROUTES
 
@@ -139,4 +157,14 @@ Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
     Route::get('/customer/orders', function () {
         return response()->json(['message' => 'Customer Orders Page']);
     });
+
+
+
+    // route for messagecontroller
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/send-message', [MessageController::class, 'sendMessage']);  //this is a send message by customer
+        Route::get('/messages', [MessageController::class, 'getMessages']); //this is a get message by customer
+        Route::get('/messages/for-user', [MessageController::class, 'getMessagesForUser']); // New route
+    });
+
 });

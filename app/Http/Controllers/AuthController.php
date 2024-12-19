@@ -67,6 +67,10 @@ public function login(Request $request)
         return response()->json(['message' => 'Invalid credentials'], 401);
     }
 
+    if ($user->isBlocked) {
+        return response()->json(['message' => 'User is blocked'], 403);
+    }
+
     $token = $user->createToken('auth_token')->plainTextToken;
 
     return response()->json([

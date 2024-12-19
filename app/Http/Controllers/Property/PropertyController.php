@@ -18,7 +18,10 @@ class PropertyController extends Controller
      */
     public function index()
     {
-        $properties = Property::select()->take(9)->orderBy('created_at', 'desc')->get();
+        $properties =Property::where('status', 1)
+        ->orderBy('created_at', 'desc')
+        ->take(9)
+        ->get();
         return response()->json($properties);
 
     }
@@ -153,7 +156,7 @@ class PropertyController extends Controller
 
         return response()->json(['status' => 'success', 'message' => 'Property updated successfully', 'property' => $property], 200);
     }
-    
+
 
     /**
      * Remove the specified resource from storage.
@@ -195,6 +198,9 @@ class PropertyController extends Controller
             $query->where('type_id', 'LIKE', "%{$typeId}%");
         }
 
+        // Add the condition to fetch only properties with status 1
+            $query->where('status', 1);
+
         // Execute the query and fetch the results
         $properties = $query->get();
 
@@ -217,4 +223,46 @@ class PropertyController extends Controller
         return response()->json(['message' => 'Server error'], 500);
     }
 }
+
+
+public function filterProperty(Request $request)
+{
+    try {
+        // Extract search inputs from the request
+        $location = $request->input('location');
+        $offerType = $request->input('offer_type');
+        $typeId = $request->input('type_id');
+
+        // Start the query
+        $query = Property::query();
+
+        // Apply filters if input fields are provided
+        if (!empty($location)) {
+            $query->where('location', 'LIKE', "%{$location}%");
+        }
+        if (!empty($offerType)) {
+            $query->where('offer_type', $offerType);
+        }
+        if (!empty($typeId)) {
+            $query->where('type_id', $typeId);
+        }
+
+        // Fetch only properties with status = 1
+        $query->where('status', 1);
+
+        // Execute the query and fetch the results
+        $properties = $query->get();
+
+        // Add image URLs to the properties if needed
+        $properties->transform(function ($property) {
+            $property->image_url = url('path/to/images/' . $property->image);
+            return $property;
+        });
+
+        return response()->json($properties, 200);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Failed to fetch properties'], 500);
+    }
+}
+
 }

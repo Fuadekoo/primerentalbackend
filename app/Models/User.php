@@ -71,4 +71,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(Feedback::class);
     }
+
+        /**
+     * Get messages sent by the user.
+     */
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'user_id');
+    }
+
+    /**
+     * Get messages received by the user.
+     */
+    public function receivedMessages()
+    {
+        return $this->hasMany(Message::class, 'to_user_id');
+    }
 }

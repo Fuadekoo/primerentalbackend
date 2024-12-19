@@ -51,6 +51,19 @@ class BookingController extends Controller
         $booking->status = $request->status;
         $booking->save();
 
+        // Find the property associated with the booking
+$property = Property::find($booking->property_id);
+
+if ($request->status === 'rejected') {
+    $property->status = 1; // Set property status to 1 if booking is rejected
+} else {
+    // Optionally, you can handle other statuses here if needed
+    // For example, if the booking is approved, you might want to set the property status to 0
+    $property->status = 0;
+}
+
+$property->save();
+
         return response()->json(['message' => 'Booking status updated successfully', 'booking' => $booking]);
     }
 
@@ -72,6 +85,17 @@ class BookingController extends Controller
             'phone_number' => 'required|string|max:255',
             'description' => 'required|string',
         ]);
+        // Find the property by ID
+    $property = Property::find($propertyId);
+
+     // Check if the booking already exists for the user and property
+     $existingBooking = Book::where('user_id', Auth::id())
+     ->where('property_id', $propertyId)
+     ->first();
+
+ if ($existingBooking) {
+     return response()->json(['message' => 'You have already booked this property.'], 409);
+ }
 
         // Create the booking
         $booking = Book::create([
@@ -80,6 +104,9 @@ class BookingController extends Controller
             'phone_number' => $request->phone_number,
             'description' => $request->description,
         ]);
+
+        $property->status = 0;
+        $property->save();
 
         return response()->json(['message' => 'Booking created successfully', 'booking' => $booking]);
     }
@@ -127,6 +154,21 @@ class BookingController extends Controller
     {
         // Delete the booking
         $booking = Book::find($id);
+
+        if ($booking->status === 'approved') {
+            return response()->json(['message' => 'Cannot delete an approved booking.'], 403);
+        }
+
+        // Find the property associated with the booking
+        $property = Property::find($booking->property_id);
+
+        if ($property) {
+            // Update the property status to 1
+            $property->status = 1;
+            $property->save();
+        }
+
+
         $booking->delete();
 
         return response()->json(['message' => 'Booking deleted successfully']);
