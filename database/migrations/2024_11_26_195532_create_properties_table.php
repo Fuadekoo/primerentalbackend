@@ -17,6 +17,7 @@ return new class extends Migration
             $table->text('description');
             $table->string('offer_type');
             $table->string('location');
+            $table->integer('quantity')->default(1);
             $table->integer('price');
             $table->unsignedBigInteger('type_id');
             $table->string('images');

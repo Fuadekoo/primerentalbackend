@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 
-
-
 class PropertyController extends Controller
 {
     /**
@@ -18,12 +16,11 @@ class PropertyController extends Controller
      */
     public function index()
     {
-        $properties =Property::where('status', 1)
-        ->orderBy('created_at', 'desc')
-        ->take(9)
-        ->get();
+        $properties = Property::where('status', 1)
+            ->orderBy('created_at', 'desc')
+            ->take(9)
+            ->get();
         return response()->json($properties);
-
     }
 
     /**
@@ -31,7 +28,7 @@ class PropertyController extends Controller
      */
     public function create()
     {
-
+        //
     }
 
     /**
@@ -46,8 +43,9 @@ class PropertyController extends Controller
             'location' => 'required|string',
             'price' => 'required|integer',
             'type_id' => 'required|integer',
+            'quantity' => 'required|integer|min:1|max:50', // Validation for quantity
             'images' => 'required|array',
-            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
         ]);
 
         if ($validator->fails()) {
@@ -122,6 +120,7 @@ class PropertyController extends Controller
             'location' => 'required|string',
             'price' => 'required|integer',
             'type_id' => 'required|integer',
+            'quantity' => 'required|integer|min:1|max:50', // Validation for quantity
             'images' => 'nullable|array',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -141,6 +140,7 @@ class PropertyController extends Controller
         $property->location = $request->location;
         $property->price = $request->price;
         $property->type_id = $request->type_id;
+        $property->quantity = $request->quantity; // Update quantity
 
         $imageNames = json_decode($property->images, true) ?? [];
         if ($request->hasFile('images')) {
@@ -156,7 +156,6 @@ class PropertyController extends Controller
 
         return response()->json(['status' => 'success', 'message' => 'Property updated successfully', 'property' => $property], 200);
     }
-
 
     /**
      * Remove the specified resource from storage.
@@ -177,92 +176,89 @@ class PropertyController extends Controller
     }
 
     public function getProperty(Request $request)
-{
-    try {
-        // Extract search inputs from the request
-        $location = $request->input('location');
-        $offerType = $request->input('offer_type');
-        $typeId = $request->input('type_id');
+    {
+        try {
+            // Extract search inputs from the request
+            $location = $request->input('location');
+            $offerType = $request->input('offer_type');
+            $typeId = $request->input('type_id');
 
-        // Start the query
-        $query = Property::query();
+            // Start the query
+            $query = Property::query();
 
-        // Apply filters if input fields are provided
-        if ($location) {
-            $query->where('location', 'LIKE', "%{$location}%");
-        }
-        if ($offerType) {
-            $query->where('offer_type', 'LIKE', "%{$offerType}%");
-        }
-        if ($typeId) {
-            $query->where('type_id', 'LIKE', "%{$typeId}%");
-        }
+            // Apply filters if input fields are provided
+            if ($location) {
+                $query->where('location', 'LIKE', "%{$location}%");
+            }
+            if ($offerType) {
+                $query->where('offer_type', 'LIKE', "%{$offerType}%");
+            }
+            if ($typeId) {
+                $query->where('type_id', 'LIKE', "%{$typeId}%");
+            }
 
-        // Add the condition to fetch only properties with status 1
+            // Add the condition to fetch only properties with status 1
             $query->where('status', 1);
 
-        // Execute the query and fetch the results
-        $properties = $query->get();
+            // Execute the query and fetch the results
+            $properties = $query->get();
 
-        // Add image URLs to the properties
-        $properties->transform(function ($property) {
-            $property->images = json_decode($property->images);
-            if ($property->images) {
-                $property->images = array_map(function ($image) {
-                    return url('property_images/' . $image);
-                }, $property->images);
+            // Add image URLs to the properties
+            $properties->transform(function ($property) {
+                $property->images = json_decode($property->images);
+                if ($property->images) {
+                    $property->images = array_map(function ($image) {
+                        return url('property_images/' . $image);
+                    }, $property->images);
+                }
+                return $property;
+            });
+
+            // Return the filtered properties as JSON
+            return response()->json($properties, 200);
+        } catch (\Exception $e) {
+            // Handle any exceptions and return an error response
+            return response()->json(['message' => 'Server error'], 500);
+        }
+    }
+
+    public function filterProperty(Request $request)
+    {
+        try {
+            // Extract search inputs from the request
+            $location = $request->input('location');
+            $offerType = $request->input('offer_type');
+            $typeId = $request->input('type_id');
+
+            // Start the query
+            $query = Property::query();
+
+            // Apply filters if input fields are provided
+            if (!empty($location)) {
+                $query->where('location', 'LIKE', "%{$location}%");
             }
-            return $property;
-        });
+            if (!empty($offerType)) {
+                $query->where('offer_type', $offerType);
+            }
+            if (!empty($typeId)) {
+                $query->where('type_id', $typeId);
+            }
 
-        // Return the filtered properties as JSON
-        return response()->json($properties, 200);
+            // Fetch only properties with status = 1
+            $query->where('status', 1);
 
-    } catch (\Exception $e) {
-        // Handle any exceptions and return an error response
-        return response()->json(['message' => 'Server error'], 500);
+            // Execute the query and fetch the results
+            $properties = $query->get();
+
+            // Add image URLs to the properties if needed
+            $properties->transform(function ($property) {
+                $property->image_url = url('path/to/images/' . $property->image);
+                return $property;
+            });
+
+            return response()->json($properties, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch properties'], 500);
+        }
     }
-}
-
-
-public function filterProperty(Request $request)
-{
-    try {
-        // Extract search inputs from the request
-        $location = $request->input('location');
-        $offerType = $request->input('offer_type');
-        $typeId = $request->input('type_id');
-
-        // Start the query
-        $query = Property::query();
-
-        // Apply filters if input fields are provided
-        if (!empty($location)) {
-            $query->where('location', 'LIKE', "%{$location}%");
-        }
-        if (!empty($offerType)) {
-            $query->where('offer_type', $offerType);
-        }
-        if (!empty($typeId)) {
-            $query->where('type_id', $typeId);
-        }
-
-        // Fetch only properties with status = 1
-        $query->where('status', 1);
-
-        // Execute the query and fetch the results
-        $properties = $query->get();
-
-        // Add image URLs to the properties if needed
-        $properties->transform(function ($property) {
-            $property->image_url = url('path/to/images/' . $property->image);
-            return $property;
-        });
-
-        return response()->json($properties, 200);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Failed to fetch properties'], 500);
-    }
-}
-
 }

@@ -21,7 +21,7 @@ class UserController extends Controller
                 });
             }
 
-            $users = $query->get();
+            $users = $query->where('isAdmin', false)->get();
             return response()->json($users, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Server error'], 500);

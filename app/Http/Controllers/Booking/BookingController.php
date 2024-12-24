@@ -38,34 +38,70 @@ class BookingController extends Controller
         return response()->json(['bookings' => $bookings]);
     }
 
-    // update the status of the booking
-    public function updateStatus(Request $request, $bookingId)
-    {
-        // Validate the incoming request
-        $request->validate([
-            'status' => 'required|string|in:pending,approved,rejected',
-        ]);
+  // update the status of the booking
+public function updateStatus(Request $request, $bookingId)
+{
+    // Validate the incoming request
+    $request->validate([
+        'status' => 'required|string|in:pending,approved,rejected,canceled',
+    ]);
 
-        // Update the booking status
-        $booking = Book::find($bookingId);
-        $booking->status = $request->status;
-        $booking->save();
-
-        // Find the property associated with the booking
-$property = Property::find($booking->property_id);
-
-if ($request->status === 'rejected') {
-    $property->status = 1; // Set property status to 1 if booking is rejected
-} else {
-    // Optionally, you can handle other statuses here if needed
-    // For example, if the booking is approved, you might want to set the property status to 0
-    $property->status = 0;
-}
-
-$property->save();
-
-        return response()->json(['message' => 'Booking status updated successfully', 'booking' => $booking]);
+    // Find the booking
+    $booking = Book::find($bookingId);
+    if (!$booking) {
+        return response()->json(['message' => 'Booking not found'], 404);
     }
+
+    // Get the previous status
+    $previousStatus = $booking->status;
+
+    // If the previous status and the new status are the same, do nothing
+    if ($previousStatus === $request->status) {
+        return response()->json(['message' => 'No status change detected'], 200);
+    }
+
+    // Find the property associated with the booking
+    $property = Property::find($booking->property_id);
+    if (!$property) {
+        return response()->json(['message' => 'Property not found'], 404);
+    }
+
+    // Adjust the property quantity based on the status change
+    if ($previousStatus === 'pending') {
+        if ($request->status === 'approved') {
+            // No change in quantity, only status change
+        } elseif ($request->status === 'rejected') {
+            $property->quantity += 1; // Increase quantity if booking is rejected from pending
+        }
+    } elseif ($previousStatus === 'approved') {
+        if ($request->status === 'approved') {
+            return response()->json(['message' => 'Booking is already approved and cannot be approved again'], 400);
+        } elseif ($request->status === 'rejected') {
+            $property->quantity += 1; // Increase quantity if booking is rejected from approved
+        }
+    } elseif ($previousStatus === 'rejected') {
+        if ($request->status === 'approved') {
+            $property->quantity -= 1; // Decrease quantity if booking is approved from rejected
+        } elseif ($request->status === 'rejected') {
+            return response()->json(['message' => 'Booking is already rejected and cannot be rejected again'], 400);
+        }
+    }
+
+    // Update the booking status
+    $booking->status = $request->status;
+    $booking->save();
+
+    // Update the property status based on the quantity
+    if ($property->quantity == 0) {
+        $property->status = 0; // Set property status to 0 if quantity is 0
+    } else {
+        $property->status = 1; // Set property status to 1 if quantity is greater than 0
+    }
+
+    $property->save();
+
+    return response()->json(['message' => 'Booking status updated successfully', 'booking' => $booking]);
+}
 
     /**
      * Show the form for creating a new resource.
@@ -105,7 +141,10 @@ $property->save();
             'description' => $request->description,
         ]);
 
-        $property->status = 0;
+        $property->quantity -= 1;
+        if ($property->quantity == 0) {
+            $property->status = 0; // Set property status to 0 if quantity is 0
+        }
         $property->save();
 
         return response()->json(['message' => 'Booking created successfully', 'booking' => $booking]);
@@ -163,8 +202,11 @@ $property->save();
         $property = Property::find($booking->property_id);
 
         if ($property) {
-            // Update the property status to 1
-            $property->status = 1;
+            // Update the property quantity and status
+            $property->quantity += 1;
+            if ($property->quantity > 0) {
+                $property->status = 1;
+            }
             $property->save();
         }
 
