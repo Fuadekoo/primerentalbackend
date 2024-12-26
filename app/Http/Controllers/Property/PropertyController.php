@@ -197,11 +197,8 @@ class PropertyController extends Controller
                 $query->where('type_id', 'LIKE', "%{$typeId}%");
             }
 
-            // Add the condition to fetch only properties with status 1
-            $query->where('status', 1);
-
             // Execute the query and fetch the results
-            $properties = $query->get();
+                $properties = $query->get();
 
             // Add image URLs to the properties
             $properties->transform(function ($property) {

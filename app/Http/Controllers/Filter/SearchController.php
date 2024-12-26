@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Property;
 use App\Models\Book;
+use App\Models\User;
 
 
 
@@ -35,19 +36,36 @@ class SearchController extends Controller
 
     }
 
-    public function dashboard(){
-         // Total posted houses
-         $totalHouses = Property::count();
+    public function dashboard()
+    {
+        // Total posted houses
+        $totalHouses = Property::count();
 
+        // Active and inactive houses
+        $activeHouses = Property::where('status', 1)->count();
+        $inactiveHouses = Property::where('status', 0)->count();
 
-         // Total booked houses (accepted and rejected)
-         $acceptedBookings = Book::where('status', 'accepted')->count();
-         $rejectedBookings = Book::where('status', 'rejected')->count();
+        // Total bookings with different statuses
+        $pendingBookings = Book::where('status', 'pending')->count();
+        $approvedBookings = Book::where('status', 'approved')->count();
+        $rejectedBookings = Book::where('status', 'rejected')->count();
 
-         return response()->json([
-             'total_houses' => $totalHouses,
-             'accepted_bookings' => $acceptedBookings,
-             'rejected_bookings' => $rejectedBookings,
-         ]);
+        // Total users
+        $totalUsers = User::count();
+
+        // Users who have not destroyed their tokens
+        $activeUsers = User::whereNotNull('remember_token')->count();
+
+        return response()->json([
+            'total_houses' => $totalHouses,
+            'active_houses' => $activeHouses,
+            'inactive_houses' => $inactiveHouses,
+            'total_bookings' => [
+                'pending' => $pendingBookings,
+                'approved' => $approvedBookings,
+                'rejected' => $rejectedBookings,
+            ],
+            'total_users' => $totalUsers,
+        ]);
     }
 }
