@@ -24,6 +24,11 @@ return new class extends Migration
             $table->string("youtube_link")->nullable();
             $table->string("tiktok_link")->nullable();
             $table->tinyInteger('status')->default(1);
+            $table->integer('bathrooms'); // New field for bathrooms
+            $table->integer('kitchen'); // New field for kitchen
+            $table->integer('bedrooms'); // New field for bedrooms
+            $table->integer('squaremeters'); // New field for square meters
+            $table->boolean('parking'); // New field for parking
             $table->timestamps();
         });
     }

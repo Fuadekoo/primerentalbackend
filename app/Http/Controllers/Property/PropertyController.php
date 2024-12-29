@@ -46,6 +46,11 @@ class PropertyController extends Controller
             'quantity' => 'required|integer|min:1|max:50', // Validation for quantity
             'images' => 'required|array',
             'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
+            'bathrooms' => 'required|integer',
+            'kitchen' => 'required|integer',
+            'bedrooms' => 'required|integer',
+            'squaremeters' => 'required|integer',
+            'parking' => 'required|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -123,6 +128,11 @@ class PropertyController extends Controller
             'quantity' => 'required|integer|min:1|max:50', // Validation for quantity
             'images' => 'nullable|array',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'bathrooms' => 'required|integer',
+            'kitchen' => 'required|integer',
+            'bedrooms' => 'required|integer',
+            'squaremeters' => 'required|integer',
+            'parking' => 'required|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -141,6 +151,12 @@ class PropertyController extends Controller
         $property->price = $request->price;
         $property->type_id = $request->type_id;
         $property->quantity = $request->quantity; // Update quantity
+        $property->bathrooms = $request->bathrooms; // Update bathrooms
+        $property->kitchen = $request->kitchen; // Update kitchen
+        $property->bedrooms = $request->bedrooms; // Update bedrooms
+        $property->squaremeters = $request->squaremeters; // Update square meters
+        $property->parking = $request->parking; // Update parking
+
 
         $imageNames = json_decode($property->images, true) ?? [];
         if ($request->hasFile('images')) {
