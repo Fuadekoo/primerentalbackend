@@ -18,7 +18,7 @@ class PropertyController extends Controller
     {
         $properties = Property::where('status', 1)
             ->orderBy('created_at', 'desc')
-            ->take(9)
+            ->take(9)->with('homeType')
             ->get();
         return response()->json($properties);
     }
