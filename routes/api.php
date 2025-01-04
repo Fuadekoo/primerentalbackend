@@ -52,6 +52,7 @@ Route::get('/getproperty',[PropertyController::class, 'getproperty']); // get th
 
 // filter the hometypes
 Route::get('/hometypesearch', [HomeTypeController::class, 'index']); // Fetch all home types
+Route::get('/myHomeType/{id}', [HomeTypeController::class, 'myHomeType']); // Fetch single home type
 
 
 

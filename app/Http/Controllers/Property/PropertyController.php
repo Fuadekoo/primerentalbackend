@@ -213,8 +213,8 @@ class PropertyController extends Controller
                 $query->where('type_id', 'LIKE', "%{$typeId}%");
             }
 
-            // Execute the query and fetch the results
-                $properties = $query->get();
+            // Execute the query and fetch the results in descending order by created_at
+            $properties = $query->orderBy('created_at', 'desc')->get();
 
             // Add image URLs to the properties
             $properties->transform(function ($property) {

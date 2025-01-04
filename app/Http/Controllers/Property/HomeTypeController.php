@@ -119,6 +119,20 @@ public function getHomeTypes(Request $request)
         return response()->json(['message' => 'Server error'], 500);
     }
 }
+
+
+public function myHomeType(string $id)
+{
+    $single_home_type = HomeType::find($id);
+
+    if (!$single_home_type) {
+        return response()->json(['message' => 'Home type not found'], 404);
+    }
+
+    return response()->json(['home_type' => $single_home_type->home_type]);
+}
+
+
 }
 
 
