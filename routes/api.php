@@ -30,17 +30,14 @@ use App\Http\Controllers\UserController;
     return response()->json(['message' => 'CSRF cookie set']);
 });
 
+Route::get('/getactiveProperty',[PropertyController::class, 'getactiveProperty']); // get all the property
+
 Route::middleware('auth:sanctum')->post('/get-user-by-id', [AuthController::class, 'getUserById']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/properties/search_by_price', [SearchController::class, 'search_by_price']);
-Route::get('/homepage', function () {
-    return response()->json(['message' => 'Welcome to the Homepage']);
-});
-Route::get('/about', function () {
-    return response()->json(['message' => 'About Page']);
-});
 
+// PUBLIC PROPERTY ROUTES for all users about the property
 Route::prefix('properties')->group(function () {
     Route::get('/', [PropertyController::class, 'index']); // Fetch all properties
     Route::get('/{id}', [PropertyController::class, 'show']); // Fetch single property
@@ -49,6 +46,7 @@ Route::prefix('properties')->group(function () {
 // filter properties by price
 Route::get('/properties/search_by_price', [SearchController::class, 'search_by_price']);
 Route::get('/getproperty',[PropertyController::class, 'getproperty']); // get the property and search it
+
 
 // filter the hometypes
 Route::get('/hometypesearch', [HomeTypeController::class, 'index']); // Fetch all home types
@@ -71,16 +69,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
         return $request->user();
     });
 
-    // SHARED PAGES FOR AUTHENTICATED USERS (BOTH ADMINS AND CUSTOMERS)
-    Route::get('/dashboard', function () {
-        return response()->json(['message' => 'Shared Dashboard for Authenticated Users']);
-    });
 });
 
 /**
  * ADMIN-ONLY ROUTES
  */
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+
+
 
     // route for messagecontroller
     Route::middleware(['auth:sanctum'])->group(function () {
@@ -121,10 +117,6 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     // admin dashboard routes
     Route::get('/dashboard', [SearchController::class, 'dashboard']);
-
-    Route::get('/admin/settings', function () {
-        return response()->json(['message' => 'Admin Settings Page']);
-    });
 });
 
 /**

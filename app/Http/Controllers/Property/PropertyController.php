@@ -8,7 +8,6 @@ use App\Models\Property;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
-
 class PropertyController extends Controller
 {
     /**
@@ -17,8 +16,7 @@ class PropertyController extends Controller
     public function index()
     {
         $properties = Property::where('status', 1)
-            ->orderBy('created_at', 'desc')
-            ->take(9)->with('homeType')
+            ->orderBy('created_at', 'desc')->with('homeType')
             ->get();
         return response()->json($properties);
     }
@@ -37,15 +35,16 @@ class PropertyController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
+            'title' => 'required|string',
             'description' => 'required|string',
             'offer_type' => 'required|string',
             'location' => 'required|string',
             'price' => 'required|integer',
+            'currency' => 'required|string|in:ETB,USD', // Add validation for currency
             'type_id' => 'required|integer',
             'quantity' => 'required|integer|min:1|max:50', // Validation for quantity
             'images' => 'required|array',
-            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
+            'images.*' => 'required|image',
             'bathrooms' => 'required|integer',
             'kitchen' => 'required|integer',
             'bedrooms' => 'required|integer',
@@ -124,10 +123,11 @@ class PropertyController extends Controller
             'offer_type' => 'required|string',
             'location' => 'required|string',
             'price' => 'required|integer',
+            'currency' => 'required|string|in:ETB,USD', // Add validation for currency
             'type_id' => 'required|integer',
             'quantity' => 'required|integer|min:1|max:50', // Validation for quantity
-            'images' => 'nullable|array',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            // 'images' => 'nullable|array',
+            // 'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
             'bathrooms' => 'required|integer',
             'kitchen' => 'required|integer',
             'bedrooms' => 'required|integer',
@@ -149,6 +149,7 @@ class PropertyController extends Controller
         $property->offer_type = $request->offer_type;
         $property->location = $request->location;
         $property->price = $request->price;
+        $property->currency = $request->currency;
         $property->type_id = $request->type_id;
         $property->quantity = $request->quantity; // Update quantity
         $property->bathrooms = $request->bathrooms; // Update bathrooms
@@ -158,16 +159,16 @@ class PropertyController extends Controller
         $property->parking = $request->parking; // Update parking
 
 
-        $imageNames = json_decode($property->images, true) ?? [];
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $imageName = Str::random(32) . '.' . $image->getClientOriginalExtension();
-                $image->move(public_path('property_images'), $imageName);
-                $imageNames[] = $imageName;
-            }
-        }
+        // $imageNames = json_decode($property->images, true) ?? [];
+        // if ($request->hasFile('images')) {
+        //     foreach ($request->file('images') as $image) {
+        //         $imageName = Str::random(32) . '.' . $image->getClientOriginalExtension();
+        //         $image->move(public_path('property_images'), $imageName);
+        //         $imageNames[] = $imageName;
+        //     }
+        // }
 
-        $property->images = json_encode($imageNames);
+        // $property->images = json_encode($imageNames);
         $property->save();
 
         return response()->json(['status' => 'success', 'message' => 'Property updated successfully', 'property' => $property], 200);
@@ -201,6 +202,52 @@ class PropertyController extends Controller
 
             // Start the query
             $query = Property::query();
+            // $query = Property::where('status', 1);
+
+            // Apply filters if input fields are provided
+            if ($location) {
+                $query->where('location', 'LIKE', "%{$location}%");
+            }
+            if ($offerType) {
+                $query->where('offer_type', 'LIKE', "%{$offerType}%");
+            }
+            if ($typeId) {
+                $query->where('type_id', 'LIKE', "%{$typeId}%");
+            }
+
+            // Execute the query and fetch the results in descending order by created_at
+            $properties = $query->orderBy('created_at', 'desc')->get();
+
+            // Add image URLs to the properties
+            $properties->transform(function ($property) {
+                $property->images = json_decode($property->images);
+                if ($property->images) {
+                    $property->images = array_map(function ($image) {
+                        return url('property_images/' . $image);
+                    }, $property->images);
+                }
+                return $property;
+            });
+
+            // Return the filtered properties as JSON
+            return response()->json($properties, 200);
+        } catch (\Exception $e) {
+            // Handle any exceptions and return an error response
+            return response()->json(['message' => 'Server error'], 500);
+        }
+    }
+
+    public function getactiveProperty(Request $request)
+    {
+        try {
+            // Extract search inputs from the request
+            $location = $request->input('location');
+            $offerType = $request->input('offer_type');
+            $typeId = $request->input('type_id');
+
+            // Start the query
+            // $query = Property::query();
+            $query = Property::where('status', 1);
 
             // Apply filters if input fields are provided
             if ($location) {

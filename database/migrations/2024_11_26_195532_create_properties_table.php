@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('location');
             $table->integer('quantity')->default(1);
             $table->integer('price');
+            $table->string('currency')->default('ETB');
             $table->unsignedBigInteger('type_id');
             $table->string('images');
             $table->string("youtube_link")->nullable();
